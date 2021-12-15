@@ -8,6 +8,8 @@ class SessionsController < ApplicationController
     if user && user.authenticate(params[:session][:password])
       if user.activated?
         log_in user
+        # ユーザーのログイン回数を追加する
+        user.count_the_sign_in
         params[:session][:remember_me] == '1' ? remember(user) : forget(user)
         redirect_back_or user
       else

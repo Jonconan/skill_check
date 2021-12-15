@@ -20,6 +20,9 @@ class User < ApplicationRecord
   has_secure_password
   validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
+  # 通知関連を持つテーブル
+  has_many :notices, -> { order(updated_at: :desc) }
+
   # 渡された文字列のハッシュ値を返す
   def User.digest(string)
     cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
@@ -89,6 +92,7 @@ class User < ApplicationRecord
   # ユーザーをフォローする
   def follow(other_user)
     following << other_user
+    other_user.notices_followered_from(user: self)
   end
 
   # ユーザーをフォロー解除する
@@ -99,6 +103,29 @@ class User < ApplicationRecord
   # 現在のユーザーがフォローしてたらtrueを返す
   def following?(other_user)
     following.include?(other_user)
+  end
+
+  # ログインした回数をカウントする
+  def count_the_sign_in
+    # 初ログインの場合、その旨を通知する
+    notices.new.first_sign_in if first_sign_in?
+    # ログイン回数をカウントアップする
+    self.sign_in_count += 1
+    self.save
+  end
+
+  # フォローされたことを通知する
+  def notices_followered_from(user: nil)
+    search_times = Time.zone.now.ago(5.minutes)..Time.zone.now
+    notice = notices.where(created_at: search_times).where('message like ?', "%フォローされました").first
+
+    # 直近に新規フォロー通知を送信している場合
+    if notice.present?
+      newest_followers = followers.where(created_at: search_times)
+      notice.update_message_follower_notice(newest_followers: newest_followers)
+    else
+      notices.new.new_follower_notices(user_name: user.name)
+    end
   end
 
   private
@@ -112,5 +139,10 @@ class User < ApplicationRecord
     def create_activation_digest
       self.activation_token  = User.new_token
       self.activation_digest = User.digest(activation_token)
+    end
+
+    # 初ログインか？
+    def first_sign_in?
+      sign_in_count.zero?
     end
 end

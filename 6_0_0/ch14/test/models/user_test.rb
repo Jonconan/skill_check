@@ -105,4 +105,86 @@ class UserTest < ActiveSupport::TestCase
       assert_not michael.feed.include?(post_unfollowed)
     end
   end
+
+  test "ユーザーがログインするとログイン回数がカウントされる" do
+    michael = users(:michael)
+
+    michael.count_the_sign_in
+    assert michael.sign_in_count == 1
+    assert michael.notices.find_by(message: "初回ログインありがとうございます。").present?
+  end
+
+  test "2度目以降のログインでは通知は増えない" do
+    michael = users(:michael)
+
+    10.times do
+      michael.count_the_sign_in
+    end
+    assert michael.sign_in_count == 10
+    assert michael.notices.where(message: "初回ログインありがとうございます。").count == 1
+  end
+
+  test "フォローされたことを通知する" do
+    michael = users(:michael)
+    archer  = users(:archer)
+
+    michael.follow(archer)
+
+    assert archer.notices.find_by(message: "#{michael.name}さんにフォローされました").present?
+  end
+
+  test "同じ人がフォローボタンを連打しても通知が増えない" do
+    michael = users(:michael)
+    archer  = users(:archer)
+
+    10.times do
+      michael.follow(archer)
+      michael.unfollow(archer)
+    end
+    assert archer.notices.where(message: "#{michael.name}さんにフォローされました").count == 1
+  end
+
+  test "複数人に連続でフォローされた場合、通知が重なる" do
+    michael = users(:michael)
+    archer  = users(:archer)
+    lana    = users(:lana)
+
+    michael.follow(archer)
+    lana.follow(archer)
+
+    assert archer.notices.find_by(message: "#{michael.name}さん他1名にフォローされました").present?
+  end
+
+  test "時系列順に、全て同じUIで通知が表示される" do
+    michael = users(:michael)
+    archer  = users(:archer)
+    lana    = users(:lana)
+
+    # michael にフォローされる
+    michael.follow(archer)
+    # archer がログイン
+    archer.count_the_sign_in
+
+    archer.notices.pluck(:message).each_with_index do |notice, i|
+      case i
+      when 0
+        assert notice == "初回ログインありがとうございます。"
+      when 1
+        assert notice == "#{michael.name}さんにフォローされました"
+      end
+    end
+
+    # lana にフォローされる
+    lana.follow(archer)
+
+    # 通知順が変わる
+    archer.notices.pluck(:message).each_with_index do |notice, i|
+      case i
+      when 0
+        assert notice == "#{michael.name}さん他1名にフォローされました"
+      when 1
+        assert notice == "初回ログインありがとうございます。"
+      end
+    end
+  end
 end

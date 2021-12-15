@@ -62,6 +62,12 @@ class UsersController < ApplicationController
     render 'show_follow'
   end
 
+  # 通知一覧
+  def notices
+    # TODO: 通知一覧の画面実装
+    render json: current_user.notices and return
+  end
+
   private
 
     def user_params
