@@ -5,6 +5,7 @@ class CreateNotices < ActiveRecord::Migration[6.0]
       t.string :message, null: false, comment: '通知内容'
       t.integer :levels, null: false, default: 0, comment: '通知の警告レベル'
       t.string :memo, comment: 'なにかメモに使う（当課題では、5分以内最初にフォローしてきたユーザーの名前を控える）'
+      t.boolean :is_read, null: false, default: false, comment: '読んだか？（当課題では未使用）'
 
       t.timestamps
     end

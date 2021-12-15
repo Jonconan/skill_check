@@ -47,6 +47,7 @@ ActiveRecord::Schema.define(version: 2021_12_15_141651) do
     t.string "message", null: false
     t.integer "levels", default: 0, null: false
     t.string "memo"
+    t.boolean "is_read", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_notices_on_user_id"
@@ -75,7 +76,7 @@ ActiveRecord::Schema.define(version: 2021_12_15_141651) do
     t.datetime "activated_at"
     t.string "reset_digest"
     t.datetime "reset_sent_at"
-    t.integer "login_count", default: 0
+    t.integer "sign_in_count", default: 0
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
