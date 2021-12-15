@@ -116,7 +116,16 @@ class User < ApplicationRecord
 
   # フォローされたことを通知する
   def notices_followered_from(user: nil)
-    notices.new.new_follower_notices(user_name: user.name)
+    search_times = Time.zone.now.ago(5.minutes)..Time.zone.now
+    notice = notices.where(created_at: search_times).where('message like ?', "%フォローされました").first
+
+    # 直近に新規フォロー通知を送信している場合
+    if notice.present?
+      newest_followers = followers.where(created_at: search_times)
+      notice.update_message_follower_notice(newest_followers: newest_followers)
+    else
+      notices.new.new_follower_notices(user_name: user.name)
+    end
   end
 
   private
