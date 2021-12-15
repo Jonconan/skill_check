@@ -20,6 +20,9 @@ class Notice < ApplicationRecord
     # 他○名なので、直近のフォロワー数から -1 する
     followers_count = newest_followers.count - 1
 
+    # もし直近のフォロワー数が0になった場合、同じユーザーがフォロー＆アンフォローを連打しているだけなので無視する
+    return if followers_count.zero?
+
     self.message = "#{user_name}さん他#{followers_count}名にフォローされました"
     self.save
   end
