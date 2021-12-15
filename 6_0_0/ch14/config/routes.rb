@@ -17,4 +17,7 @@ Rails.application.routes.draw do
   resources :password_resets,     only: [:new, :create, :edit, :update]
   resources :microposts,          only: [:create, :destroy]
   resources :relationships,       only: [:create, :destroy]
+
+  # 結果確認用（簡易版）
+  get '/notices', to: 'notices#index'
 end
