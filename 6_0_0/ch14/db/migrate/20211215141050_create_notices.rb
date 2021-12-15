@@ -1,0 +1,12 @@
+class CreateNotices < ActiveRecord::Migration[6.0]
+  def change
+    create_table :notices do |t|
+      t.references :user, null: false, foreign_key: true, comment: '通知先ユーザー'
+      t.string :message, null: false, comment: '通知内容'
+      t.integer :levels, null: false, default: 0, comment: '通知の警告レベル'
+      t.string :memo, comment: 'なにかメモに使う（当課題では、5分以内最初にフォローしてきたユーザーの名前を控える）'
+
+      t.timestamps
+    end
+  end
+end
