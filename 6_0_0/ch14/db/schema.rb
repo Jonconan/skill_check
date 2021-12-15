@@ -46,7 +46,6 @@ ActiveRecord::Schema.define(version: 2021_12_15_141651) do
     t.integer "user_id", null: false
     t.string "message", null: false
     t.integer "levels", default: 0, null: false
-    t.string "memo"
     t.boolean "is_read", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
