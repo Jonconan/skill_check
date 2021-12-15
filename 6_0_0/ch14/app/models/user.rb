@@ -20,6 +20,9 @@ class User < ApplicationRecord
   has_secure_password
   validates :password, presence: true, length: { minimum: 6 }, allow_nil: true
 
+  # 通知関連を持つテーブル
+  has_many :notices, -> { order(updated_at: :desc) }
+
   # 渡された文字列のハッシュ値を返す
   def User.digest(string)
     cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
@@ -101,6 +104,15 @@ class User < ApplicationRecord
     following.include?(other_user)
   end
 
+  # ログインした回数をカウントする
+  def count_the_sign_in
+    # 初ログインの場合、その旨を通知する
+    notices.new.first_sign_in if first_sign_in?
+    # ログイン回数をカウントアップする
+    self.sign_in_count += 1
+    self.save
+  end
+
   private
 
     # メールアドレスをすべて小文字にする
@@ -112,5 +124,10 @@ class User < ApplicationRecord
     def create_activation_digest
       self.activation_token  = User.new_token
       self.activation_digest = User.digest(activation_token)
+    end
+
+    # 初ログインか？
+    def first_sign_in?
+      sign_in_count.zero?
     end
 end
