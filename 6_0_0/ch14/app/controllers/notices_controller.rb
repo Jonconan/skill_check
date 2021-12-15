@@ -5,7 +5,7 @@ class NoticesController < ApplicationController
       {
         user_id: user.id,
         name: user.name,
-        notices: user.notices.pluck(:message)
+        notices: user.notices.pluck(:message, :updated_at)
       }
     end
 

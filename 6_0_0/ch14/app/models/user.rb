@@ -92,6 +92,7 @@ class User < ApplicationRecord
   # ユーザーをフォローする
   def follow(other_user)
     following << other_user
+    other_user.notices_followered_from(user: self)
   end
 
   # ユーザーをフォロー解除する
@@ -111,6 +112,11 @@ class User < ApplicationRecord
     # ログイン回数をカウントアップする
     self.sign_in_count += 1
     self.save
+  end
+
+  # フォローされたことを通知する
+  def notices_followered_from(user: nil)
+    notices.new.new_follower_notices(user_name: user.name)
   end
 
   private
